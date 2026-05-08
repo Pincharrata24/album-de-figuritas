@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Álbum FWC 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --tengo: #e63946;
+    --tengo-glow: rgba(230, 57, 70, 0.3);
+    --falta: #2e2e2e;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --accent: #e63946;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .stat-val {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .stat-val.red { color: var(--accent); }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 260px;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .search-wrap input:focus {
+    border-color: var(--accent);
+  }
+
+  .search-wrap input::placeholder { color: var(--text-muted); }
+
+  main {
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .sync-bar {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 8px 0 4px;
+  }
+
+  .sync-bar.syncing { color: #f4a261; }
+  .sync-bar.ok { color: #2a9d8f; }
+
+  .country-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .country-card:hover { border-color: #444; }
+
+  .country-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+  }
+
+  .country-name {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .country-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .progress-bar {
+    width: 80px;
+    height: 4px;
+    background: var(--falta);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .chevron {
+    color: var(--text-muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+
+  .country-card.open .chevron { transform: rotate(180deg); }
+
+  .figuritas-grid {
+    display: none;
+    padding: 4px 16px 14px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .country-card.open .figuritas-grid { display: flex; }
+
+  .fig {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--falta);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fig:hover { border-color: var(--accent); color: var(--text); }
+
+  .fig.tengo {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 0 8px var(--tengo-glow);
+  }
+
+  .fig.tengo:hover { background: #c1121f; border-color: #c1121f; }
+
+  #loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .dot-anim::after {
+    content: '...';
+    animation: dots 1.2s steps(3, end) infinite;
+  }
+
+  @keyframes dots {
+    0%, 33% { content: '.'; }
+    34%, 66% { content: '..'; }
+    67%, 100% { content: '...'; }
+  }
+
+  @media (max-width: 480px) {
+    .header-stats { display: none; }
+    .fig { width: 32px; height: 32px; font-size: 10px; }
+    .progress-bar { width: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">FWC 2026</div>
+  <div class="search-wrap">
+    <input type="text" id="search" placeholder="Buscar selección...">
+  </div>
+  <div class="header-stats">
+    <span>Tengo: <span class="stat-val red" id="total-tengo">–</span></span>
+    <span>Faltan: <span class="stat-val" id="total-falta">–</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="sync-bar" id="sync-bar">Conectando...</div>
+  <div id="loading"><span class="dot-anim">Cargando</span></div>
+  <div id="app"></div>
+</main>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAdxijXONZVS7DauaXQYq8OufWUkkpXPTY",
+  authDomain: "album-2026-f10ad.firebaseapp.com",
+  databaseURL: "https://album-2026-f10ad-default-rtdb.firebaseio.com",
+  projectId: "album-2026-f10ad",
+  storageBucket: "album-2026-f10ad.firebasestorage.app",
+  messagingSenderId: "511460965934",
+  appId: "1:511460965934:web:bcfe43b684f534501c29bf",
+  measurementId: "G-N1HTR069CT"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const SELECCIONES = [
+  {pais:"MEXICO",sigla:"MEX"},{pais:"SUDAFRICA",sigla:"RSA"},{pais:"COREA DEL SUR",sigla:"KOR"},
+  {pais:"REPUBLICA CHECA",sigla:"CZE"},{pais:"CANADA",sigla:"CAN"},{pais:"BOSNIA",sigla:"BIH"},
+  {pais:"QATAR",sigla:"QAT"},{pais:"SUIZA",sigla:"SUI"},{pais:"BRASIL",sigla:"BRA"},
+  {pais:"MARRUECOS",sigla:"MAR"},{pais:"HAITI",sigla:"HAI"},{pais:"ESCOCIA",sigla:"SCO"},
+  {pais:"ESTADOS UNIDOS",sigla:"USA"},{pais:"PARAGUAY",sigla:"PAR"},{pais:"AUSTRALIA",sigla:"AUS"},
+  {pais:"TURQUIA",sigla:"TUR"},{pais:"ALEMANIA",sigla:"GER"},{pais:"CURAZAO",sigla:"CUW"},
+  {pais:"COSTA DE MARFIL",sigla:"CIV"},{pais:"ECUADOR",sigla:"ECU"},{pais:"HOLANDA",sigla:"NED"},
+  {pais:"JAPON",sigla:"JPN"},{pais:"SUECIA",sigla:"SWE"},{pais:"TUNEZ",sigla:"TUN"},
+  {pais:"BELGICA",sigla:"BEL"},{pais:"EGIPTO",sigla:"EGY"},{pais:"IRAN",sigla:"IRN"},
+  {pais:"NUEVA ZELANDA",sigla:"NZL"},{pais:"ESPAÑA",sigla:"ESP"},{pais:"CABO VERDE",sigla:"CPV"},
+  {pais:"ARABIA SAUDITA",sigla:"KSA"},{pais:"URUGUAY",sigla:"URU"},{pais:"FRANCIA",sigla:"FRA"},
+  {pais:"SENEGAL",sigla:"SEN"},{pais:"IRAQ",sigla:"IRQ"},{pais:"NORUEGA",sigla:"NOR"},
+  {pais:"ARGENTINA",sigla:"ARG"},{pais:"ARGELIA",sigla:"ALG"},{pais:"AUSTRIA",sigla:"AUT"},
+  {pais:"JORDANIA",sigla:"JOR"},{pais:"PORTUGAL",sigla:"POR"},{pais:"CONGO",sigla:"COD"},
+  {pais:"UZBEKISTAN",sigla:"UZB"},{pais:"COLOMBIA",sigla:"COL"},{pais:"INGLATERRA",sigla:"ENG"},
+  {pais:"CROACIA",sigla:"CRO"},{pais:"GHANA",sigla:"GHA"},{pais:"PANAMA",sigla:"PAN"}
+];
+
+const NUMS = Array.from({length:20},(_,i)=>i+1);
+
+let estado = {};
+let openCards = new Set();
+
+const syncBar = document.getElementById('sync-bar');
+const appDiv = document.getElementById('app');
+const loadingDiv = document.getElementById('loading');
+
+function key(sigla, num) { return `${sigla}_${num}`; }
+
+function toggleFig(sigla, num) {
+  const k = key(sigla, num);
+  estado[k] = !estado[k];
+  syncBar.textContent = 'Guardando...';
+  syncBar.className = 'sync-bar syncing';
+  set(ref(db, 'album'), estado).then(() => {
+    syncBar.textContent = '✓ Sincronizado';
+    syncBar.className = 'sync-bar ok';
+  }).catch(() => {
+    syncBar.textContent = '⚠ Error al guardar';
+    syncBar.className = 'sync-bar';
+  });
+  // update UI locally immediately
+  const figEl = document.querySelector(`[data-key="${k}"]`);
+  if (figEl) {
+    figEl.classList.toggle('tengo', estado[k]);
+  }
+  updateCountry(sigla);
+  updateTotals();
+}
+
+function updateCountry(sigla) {
+  const tengo = NUMS.filter(n => estado[key(sigla,n)]).length;
+  const progressFill = document.querySelector(`[data-progress="${sigla}"]`);
+  const progressText = document.querySelector(`[data-progtext="${sigla}"]`);
+  if (progressFill) progressFill.style.width = `${(tengo/20)*100}%`;
+  if (progressText) progressText.textContent = `${tengo}/20`;
+}
+
+function updateTotals() {
+  let total = Object.values(estado).filter(Boolean).length;
+  document.getElementById('total-tengo').textContent = total;
+  document.getElementById('total-falta').textContent = SELECCIONES.length * 20 - total;
+}
+
+function buildCard(sel) {
+  const {pais, sigla} = sel;
+  const tengo = NUMS.filter(n => estado[key(sigla,n)]).length;
+  const isOpen = openCards.has(sigla);
+
+  const card = document.createElement('div');
+  card.className = `country-card${isOpen ? ' open' : ''}`;
+  card.dataset.sigla = sigla;
+
+  card.innerHTML = `
+    <div class="country-header">
+      <span class="country-name">${pais} <span style="color:var(--text-muted);font-weight:400;font-size:12px">${sigla}</span></span>
+      <div class="country-progress">
+        <div class="progress-bar"><div class="progress-fill" data-progress="${sigla}" style="width:${(tengo/20)*100}%"></div></div>
+        <span class="progress-text" data-progtext="${sigla}">${tengo}/20</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="figuritas-grid">
+      ${NUMS.map(n => `<div class="fig${estado[key(sigla,n)]?' tengo':''}" data-key="${key(sigla,n)}" data-sigla="${sigla}" data-num="${n}">${n}</div>`).join('')}
+    </div>
+  `;
+
+  card.querySelector('.country-header').addEventListener('click', () => {
+    card.classList.toggle('open');
+    if (card.classList.contains('open')) openCards.add(sigla);
+    else openCards.delete(sigla);
+  });
+
+  card.querySelectorAll('.fig').forEach(fig => {
+    fig.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFig(fig.dataset.sigla, parseInt(fig.dataset.num));
+    });
+  });
+
+  return card;
+}
+
+function render(filter = '') {
+  appDiv.innerHTML = '';
+  const q = filter.toLowerCase().trim();
+  SELECCIONES
+    .filter(s => !q || s.pais.toLowerCase().includes(q) || s.sigla.toLowerCase().includes(q))
+    .forEach(sel => appDiv.appendChild(buildCard(sel)));
+  updateTotals();
+}
+
+document.getElementById('search').addEventListener('input', e => render(e.target.value));
+
+// Listen to Firebase
+onValue(ref(db, 'album'), (snapshot) => {
+  estado = snapshot.val() || {};
+  loadingDiv.style.display = 'none';
+  syncBar.textContent = '✓ En línea';
+  syncBar.className = 'sync-bar ok';
+  render(document.getElementById('search').value);
+}, (error) => {
+  syncBar.textContent = '⚠ Sin conexión';
+  syncBar.className = 'sync-bar';
+  loadingDiv.innerHTML = 'Error al conectar con Firebase.';
+});
+</script>
+</body>
+</html>
